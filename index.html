@@ -32,7 +32,7 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     border: 1px solid #1e293b;
     box-sizing: border-box;
-</div>
+}
 
 h2 {
     color: #38bdf8;
@@ -334,7 +334,7 @@ button:hover {
 <body>
 
 <div class="card">
-    <h2>🎣 Análise de Janelas Costeiras</h2>
+    <h2> Análise de Janelas Costeiras</h2>
     <p class="subtitulo">Mapeamento barométrico, satélite e marés táticas.</p>
     
     <div id="badgeRede" class="status-rede">🟢 SISTEMA ONLINE</div>
@@ -376,8 +376,7 @@ button:hover {
             </div>
             <div class="proximas-luas">
                 <h5>📅 Cronograma das Próximas Fases:</h5>
-                <div class="grid-proximas" id="containerProximasLuas">
-                    </div>
+                <div class="grid-proximas" id="containerProximasLuas"></div>
             </div>
         </div>
 
@@ -406,7 +405,7 @@ button:hover {
             <h4 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 13px;">🗺️ Localizador de Satélite Náutico:</h4>
             <button type="button" class="btn-gps" onclick="capturarGpsReal()">📍 Forçar Sensor GPS</button>
             <div id="map"></div>
-            <div class="lista-pontos" id="listaPontosContainer"></div>
+            <div class="lista-pontos" id="listaPointsContainer"></div>
         </div>
     </div>
 </div>
@@ -446,29 +445,24 @@ function processarAnaliseCompleta() {
     inicializarMapaSatelite();
 }
 
-// ALGORITMO DE CÁLCULO LUNAR (Baseado no Ciclo Epacta de 29.53 dias)
 function calcularCicloLunarCompleto() {
     const hoje = new Date();
-    
-    // Algoritmo simplificado para descobrir a idade da lua aproximada
     const ano = hoje.getFullYear();
-    const mes = hoje.getMonth() + 1;
+    let mes = hoje.getMonth() + 1;
     const dia = hoje.getDate();
     
-    let c = 0, e = 0, jd = 0;
-    if (mes < 3) { ano--; mes += 12; }
-    let jdn = Math.floor(365.25 * (ano + 4716)) + Math.floor(30.6001 * (mes + 1)) + dia - 1524.5;
+    let anoAjustado = ano;
+    let mesAjustado = mes;
+    if (mesAjustado < 3) { anoAjustado--; mesAjustado += 12; }
     
-    // Ciclo sinódico de referência (Lua Nova base)
     const dataBaseLuaNova = new Date(2020, 0, 6, 2, 6, 0); 
     const diffTempo = hoje.getTime() - dataBaseLuaNova.getTime();
     const diffDias = diffTempo / (1000 * 60 * 60 * 24);
     const idadeLua = diffDias % 29.530588853;
 
-    // Definição da fase atual
     let faseAtualNome = "";
     let faseAtualIcone = "";
-    let indexFaseBase = 0; // 0=Nova, 1=Crescente, 2=Cheia, 3=Minguante
+    let indexFaseBase = 0;
 
     if (idadeLua < 1.84) { faseAtualNome = "Lua Nova (Reponto Morto)"; faseAtualIcone = "🌑"; indexFaseBase = 0; }
     else if (idadeLua < 5.53) { faseAtualNome = "Lua Crescente (Enchente Rápida)"; faseAtualIcone = "🌒"; indexFaseBase = 1; }
@@ -483,8 +477,7 @@ function calcularCicloLunarCompleto() {
     document.getElementById("luaIcone").innerText = faseAtualIcone;
     document.getElementById("luaNome").innerHTML = `${faseAtualNome} <br><span style="font-size:11px; font-weight:normal; color:#94a3b8;">Idade do ciclo: ${idadeLua.toFixed(1)} dias</span>`;
 
-    // Calcular as datas das próximas 3 grandes fases principais
-    const definicaoFases principais = [
+    const definicaoFasesPrincipais = [
         { nome: "Lua Nova", icone: "🌑", diasDoCiclo: 0 },
         { nome: "Qto Crescente", icone: "🌓", diasDoCiclo: 7.38 },
         { nome: "Lua Cheia", icone: "🌕", diasDoCiclo: 14.77 },
@@ -499,16 +492,14 @@ function calcularCicloLunarCompleto() {
 
     while (fasesAdicionadas < 3) {
         const alvoFase = definicaoFasesPrincipais[checagemFaseIndex];
-        
         let diasAteFase = alvoFase.diasDoCiclo - idadeLua;
         if (diasAteFase <= 0) {
-            diasAteFase += 29.53; // joga para o próximo mês se já passou no ciclo atual
+            diasAteFase += 29.53;
         }
 
         const dataFutura = new Date();
         dataFutura.setDate(hoje.getDate() + diasAteFase);
 
-        // Formata data em DD/MM
         const diaF = String(dataFutura.getDate()).padStart(2, '0');
         const mesF = String(dataFutura.getMonth() + 1).padStart(2, '0');
 
@@ -652,7 +643,7 @@ function renderizarMarcadorNoMapa(ponto) {
 }
 
 function renderizarListaTextualPontos() {
-    const container = document.getElementById("listaPontosContainer");
+    const container = document.getElementById("listaPointsContainer");
     if (marcadoresSalvos.length === 0) {
         container.innerHTML = `<div style="color: #64748b; font-size: 11px; text-align: center;">Nenhum ponto marcado no satélite ainda. Clique no mapa para marcar.</div>`;
         return;
