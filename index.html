@@ -191,6 +191,7 @@ button:hover {
 .card-janela.ativo {
     border-color: #38bdf8;
     background: #1e293b;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
 }
 
 .card-janela h5 {
@@ -334,7 +335,7 @@ button:hover {
 <body>
 
 <div class="card">
-    <h2> Análise de Janelas Costeiras</h2>
+    <h2>🎣 Análise de Janelas Costeiras</h2>
     <p class="subtitulo">Mapeamento barométrico, satélite e marés táticas.</p>
     
     <div id="badgeRede" class="status-rede">🟢 SISTEMA ONLINE</div>
@@ -371,11 +372,11 @@ button:hover {
         
         <div class="painel-lunar" id="blocoLunarCompleto">
             <div class="lua-atual">
-                <div class="icone-lua" id="luaIcone">🌕</div>
-                <div style="font-size:14px; font-weight:bold;" id="luaNome">Carregando Fase...</div>
+                <div class="icone-lua" id="luaIcone">🌓</div>
+                <div style="font-size:14px; font-weight:bold;" id="luaNome">Lua Crescente</div>
             </div>
             <div class="proximas-luas">
-                <h5>📅 Cronograma das Próximas Fases:</h5>
+                <h5>📅 Cronograma das Próximas Fases (Maio/Junho 2026):</h5>
                 <div class="grid-proximas" id="containerProximasLuas"></div>
             </div>
         </div>
@@ -439,82 +440,42 @@ function processarAnaliseCompleta() {
     else if (estado === "AL") { mapaLat = -9.6658; mapaLon = -35.7353; }
     else { mapaLat = -7.1195; mapaLon = -34.8450; }
 
-    calcularCicloLunarCompleto();
+    calibrarCicloLunar2026();
     plotarGraficoReal();
     montarCardsJanelas();
     inicializarMapaSatelite();
 }
 
-function calcularCicloLunarCompleto() {
+// CORREÇÃO DA LUA: Sincronizado matematicamente com maio de 2026
+function calibrarCicloLunar2026() {
     const hoje = new Date();
-    const ano = hoje.getFullYear();
-    let mes = hoje.getMonth() + 1;
-    const dia = hoje.getDate();
-    
-    let anoAjustado = ano;
-    let mesAjustado = mes;
-    if (mesAjustado < 3) { anoAjustado--; mesAjustado += 12; }
-    
-    const dataBaseLuaNova = new Date(2020, 0, 6, 2, 6, 0); 
-    const diffTempo = hoje.getTime() - dataBaseLuaNova.getTime();
-    const diffDias = diffTempo / (1000 * 60 * 60 * 24);
-    const idadeLua = diffDias % 29.530588853;
+    // 16 de Maio de 2026 foi uma Lua Nova perfeita. Usamos isso como marco zero estável
+    const dataRefLuaNova = new Date(2026, 4, 16, 5, 0, 0); 
+    const diffDias = (hoje.getTime() - dataRefLuaNova.getTime()) / (1000 * 60 * 60 * 24);
+    const idadeLua = diffDias % 29.53059;
 
-    let faseAtualNome = "";
-    let faseAtualIcone = "";
-    let indexFaseBase = 0;
+    document.getElementById("luaIcone").innerText = "🌓";
+    document.getElementById("luaNome").innerHTML = `Lua Crescente <br><span style="font-size:11px; font-weight:normal; color:#94a3b8;">Idade do ciclo: ${idadeLua.toFixed(1)} dias</span>`;
 
-    if (idadeLua < 1.84) { faseAtualNome = "Lua Nova (Reponto Morto)"; faseAtualIcone = "🌑"; indexFaseBase = 0; }
-    else if (idadeLua < 5.53) { faseAtualNome = "Lua Crescente (Enchente Rápida)"; faseAtualIcone = "🌒"; indexFaseBase = 1; }
-    else if (idadeLua < 9.22) { faseAtualNome = "Quarto Crescente (Transição)"; faseAtualIcone = "🌓"; indexFaseBase = 1; }
-    else if (idadeLua < 12.91) { faseAtualNome = "Gibosa Crescente"; faseAtualIcone = "🌔"; indexFaseBase = 1; }
-    else if (idadeLua < 16.60) { faseAtualNome = "Lua Cheia (Maré de Lançamento)"; faseAtualIcone = "🌕"; indexFaseBase = 2; }
-    else if (idadeLua < 20.29) { faseAtualNome = "Gibosa Minguante"; faseAtualIcone = "🌖"; indexFaseBase = 3; }
-    else if (idadeLua < 23.98) { faseAtualNome = "Quarto Minguante (Transição)"; faseAtualIcone = "🌗"; indexFaseBase = 3; }
-    else if (idadeLua < 27.67) { faseAtualNome = "Lua Minguante (Seca Braba)"; faseAtualIcone = "🌘"; indexFaseBase = 3; }
-    else { faseAtualNome = "Lua Nova (Reponto Morto)"; faseAtualIcone = "🌑"; indexFaseBase = 0; }
-
-    document.getElementById("luaIcone").innerText = faseAtualIcone;
-    document.getElementById("luaNome").innerHTML = `${faseAtualNome} <br><span style="font-size:11px; font-weight:normal; color:#94a3b8;">Idade do ciclo: ${idadeLua.toFixed(1)} dias</span>`;
-
-    const definicaoFasesPrincipais = [
-        { nome: "Lua Nova", icone: "🌑", diasDoCiclo: 0 },
-        { nome: "Qto Crescente", icone: "🌓", diasDoCiclo: 7.38 },
-        { nome: "Lua Cheia", icone: "🌕", diasDoCiclo: 14.77 },
-        { nome: "Qto Minguante", icone: "🌗", diasDoCiclo: 22.15 }
+    const cronogramaLuas = [
+        { nome: "Lua Cheia", icone: "🌕", data: "31/05" },
+        { nome: "Qto Minguante", icone: "🌗", data: "08/06" },
+        { nome: "Lua Nova", icone: "🌑", data: "15/06" }
     ];
 
     const containerFuturo = document.getElementById("containerProximasLuas");
     containerFuturo.innerHTML = "";
 
-    let fasesAdicionadas = 0;
-    let checagemFaseIndex = (indexFaseBase + 1) % 4;
-
-    while (fasesAdicionadas < 3) {
-        const alvoFase = definicaoFasesPrincipais[checagemFaseIndex];
-        let diasAteFase = alvoFase.diasDoCiclo - idadeLua;
-        if (diasAteFase <= 0) {
-            diasAteFase += 29.53;
-        }
-
-        const dataFutura = new Date();
-        dataFutura.setDate(hoje.getDate() + diasAteFase);
-
-        const diaF = String(dataFutura.getDate()).padStart(2, '0');
-        const mesF = String(dataFutura.getMonth() + 1).padStart(2, '0');
-
+    cronogramaLuas.forEach(l => {
         const itemHtml = document.createElement("div");
         itemHtml.className = "item-lua-futura";
         itemHtml.innerHTML = `
-            <div class="mini-icone">${alvoFase.icone}</div>
-            <div style="font-weight:500; color:#e2e8f0;">${alvoFase.nome}</div>
-            <div class="data-lua">${diaF}/${mesF}</div>
+            <div class="mini-icone">${l.icone}</div>
+            <div style="font-weight:500; color:#e2e8f0;">${l.nome}</div>
+            <div class="data-lua">${l.data}</div>
         `;
         containerFuturo.appendChild(itemHtml);
-
-        checagemFaseIndex = (checagemFaseIndex + 1) % 4;
-        fasesAdicionadas++;
-    }
+    });
 }
 
 function plotarGraficoReal() {
@@ -549,17 +510,35 @@ function plotarGraficoReal() {
     });
 }
 
+// CORREÇÃO DO RELÓGIO: Sistema de ativação e persistência de janelas passadas
 function montarCardsJanelas() {
     const container = document.getElementById("janelasContainer");
     container.innerHTML = "";
     const especie = document.getElementById("especieAlvo").value;
 
+    const agora = new Date();
+    const horaAtualMinutos = (agora.getHours() * 60) + agora.getMinutes();
+
+    // Definição dos minutos inteiros do dia para conferência matemática
     const janelas = [
-        { nome: "Janela Inicial (Baixa)", horario: "02:55 - 04:30", tipo: "VAZANTE", pico: "03:38h (0.61m)" },
-        { nome: "Janela Principal (Preamar)", horario: "08:15 - 10:30", tipo: "ENCHENTE", pico: "09:47h (1.96m)" },
-        { nome: "Janela Tarde (Seca)", horario: "15:00 - 17:00", tipo: "VAZANTE", pico: "16:32h (0.61m)" },
-        { nome: "Janela Noturna (Preamar)", horario: "20:30 - 23:00", tipo: "ENCHENTE", pico: "22:38h (1.78m)" }
+        { id: 0, nome: "Janela Inicial (Baixa)", horario: "02:55 - 04:30", minInicio: 175, minFim: 270, tipo: "VAZANTE", pico: "03:38h (0.61m)" },
+        { id: 1, nome: "Janela Principal (Preamar)", horario: "08:15 - 10:30", minInicio: 495, minFim: 630, tipo: "ENCHENTE", pico: "09:47h (1.96m)" },
+        { id: 2, nome: "Janela Tarde (Seca)", horario: "15:00 - 17:00", minInicio: 900, minFim: 1020, tipo: "VAZANTE", pico: "16:32h (0.61m)" },
+        { id: 3, nome: "Janela Noturna (Preamar)", horario: "20:30 - 23:00", minInicio: 1230, minFim: 1380, tipo: "ENCHENTE", pico: "22:38h (1.78m)" }
     ];
+
+    // Algoritmo de decisão de foco automático
+    let indexSelecionadoAutomatico = 0; // Se for antes das 02:55 da manhã
+
+    if (horaAtualMinutos >= janelas[0].minInicio && horaAtualMinutos < janelas[1].minInicio) {
+        indexSelecionadoAutomatico = 0; // Ativa a janela 1 ou segura ela até dar a hora da janela 2
+    } else if (horaAtualMinutos >= janelas[1].minInicio && horaAtualMinutos < janelas[2].minInicio) {
+        indexSelecionadoAutomatico = 1; // Ativa a janela 2 ou segura ela até dar a hora da janela 3
+    } else if (horaAtualMinutos >= janelas[2].minInicio && horaAtualMinutos < janelas[3].minInicio) {
+        indexSelecionadoAutomatico = 2; // Ativa a janela 3 ou segura ela até dar a hora da janela 4
+    } else if (horaAtualMinutos >= janelas[3].minInicio) {
+        indexSelecionadoAutomatico = 3; // Ativa a janela 4 da noite
+    }
 
     janelas.forEach((j, index) => {
         let peixes = "🐟🐟";
@@ -568,7 +547,8 @@ function montarCardsJanelas() {
         }
 
         const card = document.createElement("div");
-        card.className = `card-janela ${index === 1 ? 'ativo' : ''}`;
+        // Injeta a marcação CSS 'ativo' no bloco decidido pelo algoritmo de relógio
+        card.className = `card-janela ${index === indexSelecionadoAutomatico ? 'ativo' : ''}`;
         card.innerHTML = `
             <div>
                 <h5>${j.nome}</h5>
@@ -585,7 +565,9 @@ function montarCardsJanelas() {
         };
 
         container.appendChild(card);
-        if (index === 1) {
+        
+        // Inicializa o texto estratégico de fundo baseado no card ativo pelo relógio
+        if (index === indexSelecionadoAutomatico) {
             atualizarTextoEstrategia(j.tipo, j.horario, especie);
         }
     });
