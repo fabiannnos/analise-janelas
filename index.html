@@ -351,7 +351,6 @@ let marcadorGps = null;
 let mapaLat = -8.1120;
 let mapaLon = -34.8910;
 
-// Valores exatos do gráfico real enviado nas imagens
 const horariosReais = ["00:00", "01:30", "03:38", "06:00", "07:30", "09:15", "12:00", "14:00", "15:41", "18:00", "20:00", "21:49", "23:59"];
 const alturasReais = [1.1, 0.9, 0.61, 1.4, 1.7, 1.96, 0.5, 1.0, 0.6, 1.5, 1.2, 1.78, 1.0];
 
@@ -367,7 +366,6 @@ function processarAnaliseCompleta() {
     document.getElementById("resTitulo").innerText = `📍 ${cidade} - ${estado}`;
     document.getElementById("localAtual").style.display = "block";
 
-    // Centralização de mapa genérica para o Nordeste dependendo do estado
     if (estado === "PE") { mapaLat = -8.1120; mapaLon = -34.8910; }
     else if (estado === "AL") { mapaLat = -9.6658; mapaLon = -35.7353; }
     else { mapaLat = -7.1195; mapaLon = -34.8450; }
@@ -414,8 +412,7 @@ function montarCardsJanelas() {
     container.innerHTML = "";
     const especie = document.getElementById("especieAlvo").value;
 
-    // Janelas exatas calculadas a partir dos picos reais das imagens enviados
-    const janelas e = [
+    const janelas = [
         { nome: "Janela Inicial (Baixa)", horario: "02:55 - 04:30", tipo: "VAZANTE", pico: "03:38h (0.61m)" },
         { nome: "Janela Principal (Preamar)", horario: "08:15 - 10:30", tipo: "ENCHENTE", pico: "09:47h (1.96m)" },
         { nome: "Janela Tarde (Seca)", horario: "15:00 - 17:00", tipo: "VAZANTE", pico: "16:32h (0.61m)" },
