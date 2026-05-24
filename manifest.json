@@ -1,7 +1,7 @@
 {
-  "name": "Modello Janelas de Pesca",
-  "short_name": "PescaModello",
-  "description": "Painel de telemetria e janelas inteligentes de pesca",
+  "name": "Análise de Janelas",
+  "short_name": "JanelasPesca",
+  "description": "Mapeamento barométrico e hidrodinâmica lunar de marés",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#070d19",
@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/2984/2984025.png",
+      "src": "https://img.icons8.com/fluent/512/fish.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
