@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Análise de Janelas - Maré Real e Pontos Secretos</title>
+<title>Análise de Janelas - Maré Real e Calendário Lunar</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f1a2c">
@@ -32,7 +32,7 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     border: 1px solid #1e293b;
     box-sizing: border-box;
-}
+</div>
 
 h2 {
     color: #38bdf8;
@@ -120,20 +120,53 @@ button:hover {
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-.lua-atual {
     text-align: center;
-    width: 100%;
 }
 
 .lua-atual .icone-lua {
-    font-size: 32px;
+    font-size: 36px;
     margin-bottom: 2px;
+}
+
+.proximas-luas {
+    margin-top: 14px;
+    border-top: 1px solid #1e3a63;
+    padding-top: 12px;
+    text-align: left;
+}
+
+.proximas-luas h5 {
+    margin: 0 0 8px 0;
+    color: #94a3b8;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.grid-proximas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.item-lua-futura {
+    background: #0f1a2c;
+    padding: 8px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 11px;
+    border: 1px solid #1e293b;
+}
+
+.item-lua-futura .mini-icone {
+    font-size: 18px;
+    margin-bottom: 2px;
+}
+
+.item-lua-futura .data-lua {
+    color: #38bdf8;
+    font-weight: bold;
+    margin-top: 2px;
 }
 
 .janelas-container {
@@ -301,7 +334,7 @@ button:hover {
 <body>
 
 <div class="card">
-    <h2>Análise de Janelas Costeiras</h2>
+    <h2>🎣 Análise de Janelas Costeiras</h2>
     <p class="subtitulo">Mapeamento barométrico, satélite e marés táticas.</p>
     
     <div id="badgeRede" class="status-rede">🟢 SISTEMA ONLINE</div>
@@ -336,10 +369,15 @@ button:hover {
     <div class="resultado" id="localAtual">
         <h3 id="resTitulo" style="margin-top:0; color: #38bdf8; margin-bottom: 12px;"></h3>
         
-        <div class="painel-lunar">
+        <div class="painel-lunar" id="blocoLunarCompleto">
             <div class="lua-atual">
-                <div class="icone-lua">🌓</div>
-                <div style="font-size:14px; font-weight:bold;">Lua Crescente</div>
+                <div class="icone-lua" id="luaIcone">🌕</div>
+                <div style="font-size:14px; font-weight:bold;" id="luaNome">Carregando Fase...</div>
+            </div>
+            <div class="proximas-luas">
+                <h5>📅 Cronograma das Próximas Fases:</h5>
+                <div class="grid-proximas" id="containerProximasLuas">
+                    </div>
             </div>
         </div>
 
@@ -379,7 +417,7 @@ document.getElementById("btnCidade").addEventListener("click", processarAnaliseC
 let meuGrafico = null;
 let mapaPesca = null;
 let marcadorGps = null;
-let marcadoresSalvos = []; // Variável de armazenamento limpa e corrigida
+let marcadoresSalvos = [];
 let mapaLat = -8.1120;
 let mapaLon = -34.8910;
 
@@ -402,9 +440,90 @@ function processarAnaliseCompleta() {
     else if (estado === "AL") { mapaLat = -9.6658; mapaLon = -35.7353; }
     else { mapaLat = -7.1195; mapaLon = -34.8450; }
 
+    calcularCicloLunarCompleto();
     plotarGraficoReal();
     montarCardsJanelas();
     inicializarMapaSatelite();
+}
+
+// ALGORITMO DE CÁLCULO LUNAR (Baseado no Ciclo Epacta de 29.53 dias)
+function calcularCicloLunarCompleto() {
+    const hoje = new Date();
+    
+    // Algoritmo simplificado para descobrir a idade da lua aproximada
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth() + 1;
+    const dia = hoje.getDate();
+    
+    let c = 0, e = 0, jd = 0;
+    if (mes < 3) { ano--; mes += 12; }
+    let jdn = Math.floor(365.25 * (ano + 4716)) + Math.floor(30.6001 * (mes + 1)) + dia - 1524.5;
+    
+    // Ciclo sinódico de referência (Lua Nova base)
+    const dataBaseLuaNova = new Date(2020, 0, 6, 2, 6, 0); 
+    const diffTempo = hoje.getTime() - dataBaseLuaNova.getTime();
+    const diffDias = diffTempo / (1000 * 60 * 60 * 24);
+    const idadeLua = diffDias % 29.530588853;
+
+    // Definição da fase atual
+    let faseAtualNome = "";
+    let faseAtualIcone = "";
+    let indexFaseBase = 0; // 0=Nova, 1=Crescente, 2=Cheia, 3=Minguante
+
+    if (idadeLua < 1.84) { faseAtualNome = "Lua Nova (Reponto Morto)"; faseAtualIcone = "🌑"; indexFaseBase = 0; }
+    else if (idadeLua < 5.53) { faseAtualNome = "Lua Crescente (Enchente Rápida)"; faseAtualIcone = "🌒"; indexFaseBase = 1; }
+    else if (idadeLua < 9.22) { faseAtualNome = "Quarto Crescente (Transição)"; faseAtualIcone = "🌓"; indexFaseBase = 1; }
+    else if (idadeLua < 12.91) { faseAtualNome = "Gibosa Crescente"; faseAtualIcone = "🌔"; indexFaseBase = 1; }
+    else if (idadeLua < 16.60) { faseAtualNome = "Lua Cheia (Maré de Lançamento)"; faseAtualIcone = "🌕"; indexFaseBase = 2; }
+    else if (idadeLua < 20.29) { faseAtualNome = "Gibosa Minguante"; faseAtualIcone = "🌖"; indexFaseBase = 3; }
+    else if (idadeLua < 23.98) { faseAtualNome = "Quarto Minguante (Transição)"; faseAtualIcone = "🌗"; indexFaseBase = 3; }
+    else if (idadeLua < 27.67) { faseAtualNome = "Lua Minguante (Seca Braba)"; faseAtualIcone = "🌘"; indexFaseBase = 3; }
+    else { faseAtualNome = "Lua Nova (Reponto Morto)"; faseAtualIcone = "🌑"; indexFaseBase = 0; }
+
+    document.getElementById("luaIcone").innerText = faseAtualIcone;
+    document.getElementById("luaNome").innerHTML = `${faseAtualNome} <br><span style="font-size:11px; font-weight:normal; color:#94a3b8;">Idade do ciclo: ${idadeLua.toFixed(1)} dias</span>`;
+
+    // Calcular as datas das próximas 3 grandes fases principais
+    const definicaoFases principais = [
+        { nome: "Lua Nova", icone: "🌑", diasDoCiclo: 0 },
+        { nome: "Qto Crescente", icone: "🌓", diasDoCiclo: 7.38 },
+        { nome: "Lua Cheia", icone: "🌕", diasDoCiclo: 14.77 },
+        { nome: "Qto Minguante", icone: "🌗", diasDoCiclo: 22.15 }
+    ];
+
+    const containerFuturo = document.getElementById("containerProximasLuas");
+    containerFuturo.innerHTML = "";
+
+    let fasesAdicionadas = 0;
+    let checagemFaseIndex = (indexFaseBase + 1) % 4;
+
+    while (fasesAdicionadas < 3) {
+        const alvoFase = definicaoFasesPrincipais[checagemFaseIndex];
+        
+        let diasAteFase = alvoFase.diasDoCiclo - idadeLua;
+        if (diasAteFase <= 0) {
+            diasAteFase += 29.53; // joga para o próximo mês se já passou no ciclo atual
+        }
+
+        const dataFutura = new Date();
+        dataFutura.setDate(hoje.getDate() + diasAteFase);
+
+        // Formata data em DD/MM
+        const diaF = String(dataFutura.getDate()).padStart(2, '0');
+        const mesF = String(dataFutura.getMonth() + 1).padStart(2, '0');
+
+        const itemHtml = document.createElement("div");
+        itemHtml.className = "item-lua-futura";
+        itemHtml.innerHTML = `
+            <div class="mini-icone">${alvoFase.icone}</div>
+            <div style="font-weight:500; color:#e2e8f0;">${alvoFase.nome}</div>
+            <div class="data-lua">${diaF}/${mesF}</div>
+        `;
+        containerFuturo.appendChild(itemHtml);
+
+        checagemFaseIndex = (checagemFaseIndex + 1) % 4;
+        fasesAdicionadas++;
+    }
 }
 
 function plotarGraficoReal() {
@@ -492,12 +611,11 @@ function atualizarTextoEstrategia(tipo, horario, especie) {
             ? "🎯 **Ataque Ativo!** O Xaréu entra com força nas estruturas costeiras rasas perseguindo cardumes durante a subida do nível. Use poppers e jigs de alta velocidade."
             : "Na maré secando, busque as calhas mais profundas e canais centrais usando jumping jigs.";
     } else {
-        texto += "A Caranha ativa o faro predador em fendas de pedras profundas. Iscas naturais de fundo ou jigs pesados bem lentos dão o melhor resultad.";
+        texto += "A Caranha ativa o faro predador em fendas de pedras profundas. Iscas naturais de fundo ou jigs pesados bem lentos dão o melhor resultado.";
     }
     document.getElementById("textoAnalise").innerHTML = texto;
 }
 
-// --- FUNÇÕES DE MAPA CORRIGIDAS E SALVAMENTO DE PONTOS ---
 function inicializarMapaSatelite() {
     if (!mapaPesca) {
         mapaPesca = L.map('map').setView([mapaLat, mapaLon], 13);
@@ -505,15 +623,13 @@ function inicializarMapaSatelite() {
             attribution: 'Esri &mdash; Telemetria Náutica'
         }).addTo(mapaPesca);
 
-        // Ouvinte de clique no mapa para criar pontos
         mapaPesca.on('click', function(e) {
-            const nomePonto = prompt("Nome deste Ponto Secreto (Ex: Parchel do Xaréu):");
+            const nomePonto = prompt("Nome deste Ponto Secreto:");
             if (nomePonto) {
                 adicionarPontoDePesca(nomePonto, e.latlng.lat, e.latlng.lng);
             }
         });
 
-        // Carrega pontos antigos salvos no navegador (LocalStorage)
         carregarPontosLocalStorage();
     } else {
         mapaPesca.setView([mapaLat, mapaLon], 13);
@@ -524,30 +640,23 @@ function inicializarMapaSatelite() {
 function adicionarPontoDePesca(nome, lat, lng) {
     const novoPonto = { id: Date.now(), nome: nome, lat: lat, lng: lng };
     marcadoresSalvos.push(novoPonto);
-    
-    // Cria o marcador visual vermelho na tela
     renderizarMarcadorNoMapa(novoPonto);
-    
-    // Salva a lista atualizada no banco de dados do navegador (LocalStorage)
     salvarPontosLocalStorage();
     renderizarListaTextualPontos();
 }
 
 function renderizarMarcadorNoMapa(ponto) {
-    // Adiciona o pino no mapa de satélite
     const marker = L.marker([ponto.lat, ponto.lng]).addTo(mapaPesca);
     marker.bindPopup(`<b>⚓ ${ponto.nome}</b>`).openPopup();
-    ponto._leafletMarker = marker; // guarda referência para deleção
+    ponto._leafletMarker = marker;
 }
 
 function renderizarListaTextualPontos() {
-    // Cria a lista de coordenadas embaixo do mapa
     const container = document.getElementById("listaPontosContainer");
     if (marcadoresSalvos.length === 0) {
-        container.innerHTML = `<div style="color: #64748b; font-size: 11px; text-align: center;">Nenhum ponto marcado no satélite ainda. Clicque no mapa para marcar.</div>`;
+        container.innerHTML = `<div style="color: #64748b; font-size: 11px; text-align: center;">Nenhum ponto marcado no satélite ainda. Clique no mapa para marcar.</div>`;
         return;
     }
-
     container.innerHTML = "";
     marcadoresSalvos.forEach((p) => {
         const item = document.createElement("div");
@@ -561,36 +670,30 @@ function renderizarListaTextualPontos() {
 }
 
 function deletarPontoDePesca(id) {
-    // Lógica para apagar o ponto
     const index = marcadoresSalvos.findIndex(p => p.id === id);
     if (index !== -1) {
-        // Remove fisicamente o pino do mapa de satélite
         if (marcadoresSalvos[index]._leafletMarker) {
             mapaPesca.removeLayer(marcadoresSalvos[index]._leafletMarker);
         }
         marcadoresSalvos.splice(index, 1);
-        salvarPontosLocalStorage(); // Salva a lista limpa
+        salvarPontosLocalStorage();
         renderizarListaTextualPontos();
     }
 }
 
-// CORREÇÃO ESSENCIAL: Sintaxe de salvamento limpa e sem erros
 function salvarPontosLocalStorage() {
-    // Clona o array limpando as instâncias circulares do Leaflet para não quebrar o JSON
     const dadosLimpos = marcadoresSalvos.map(p => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng }));
     localStorage.setItem('modello_pontos_pesca', JSON.stringify(dadosLimpos));
 }
 
 function carregarPontosLocalStorage() {
-    // Lê a lista salva no navegador
     const locais = localStorage.getItem('modello_pontos_pesca');
     if (locais) {
         const itens = JSON.parse(locais);
-        marcadoresSalvos = []; // Limpa o array atual antes de recarregar
+        marcadoresSalvos = [];
         itens.forEach(p => {
             const pontoRestaurado = { id: p.id, nome: p.nome, lat: p.lat, lng: p.lng };
             marcadoresSalvos.push(pontoRestaurado);
-            // Redesenha os pinos no mapa
             renderizarMarcadorNoMapa(pontoRestaurado);
         });
         renderizarListaTextualPontos();
@@ -598,7 +701,6 @@ function carregarPontosLocalStorage() {
 }
 
 function capturarGpsReal() {
-    // Função de GPS inalterada e operacional
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition((position) => {
             const lat = position.coords.latitude;
@@ -610,7 +712,7 @@ function capturarGpsReal() {
             
             mapaPesca.setView([lat, lng], 15);
         }, () => {
-            alert("Não foi possível acessar o GPS. Certifique-se de que o site está rodando com o link HTTPS gerado pelo GitHub Pages no celular.");
+            alert("Não foi possível acessar o GPS. Certifique-se de que o site está rodando com o link HTTPS no celular.");
         }, { enableHighAccuracy: true });
     } else {
         alert("Geolocalização indisponível.");
