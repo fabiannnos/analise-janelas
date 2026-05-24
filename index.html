@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Análise de Janelas - Maré Real</title>
+<title>Análise de Janelas - Maré Real e Pontos Secretos</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f1a2c">
@@ -213,6 +213,36 @@ button:hover {
     background: #0b1321;
 }
 
+.lista-pontos {
+    margin-top: 10px;
+    background: #070d19;
+    padding: 8px;
+    border-radius: 8px;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.ponto-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 6px 0;
+    border-bottom: 1px solid #142237;
+}
+
+.ponto-item span {
+    color: #38bdf8;
+}
+
+.ponto-item button {
+    width: auto;
+    padding: 2px 6px;
+    margin: 0;
+    font-size: 10px;
+    background: #ef4444;
+    color: white;
+}
+
 .grid-clima {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -271,8 +301,8 @@ button:hover {
 <body>
 
 <div class="card">
-    <h2>🎣 Análise de Janelas Costeiras</h2>
-    <p class="subtitulo">Mapeamento barométrico e hidrodinâmica lunar de marés.</p>
+    <h2>Análise de Janelas Costeiras</h2>
+    <p class="subtitulo">Mapeamento barométrico, satélite e marés táticas.</p>
     
     <div id="badgeRede" class="status-rede">🟢 SISTEMA ONLINE</div>
 
@@ -301,7 +331,7 @@ button:hover {
         </div>
     </div>
 
-    <button id="btnCidade">Analisar Marés e Condições</button>
+    <button id="btnCidade">Analisar Condições</button>
 
     <div class="resultado" id="localAtual">
         <h3 id="resTitulo" style="margin-top:0; color: #38bdf8; margin-bottom: 12px;"></h3>
@@ -321,9 +351,9 @@ button:hover {
             <p id="textoAnalise">Selecione uma janela operacional para ver os detalhes técnicos.</p>
         </div>
 
-        <h4 style="margin-top: 20px; margin-bottom: 5px; color: #94a3b8; font-size: 13px;">📊 Telemetria Operacional:</h4>
+        <h4 style="margin-top: 20px; margin-bottom: 5px; color: #94a3b8; font-size: 13px;">📊 Telemetria Operacional Atual:</h4>
         <div class="grid-clima">
-            <div class="item-clima">📉 Coeficiente de Maré<span id="resCoef">52 - 53 (Baixo)</span></div>
+            <div class="item-clima">📉 Coeficiente de Maré<span>52 - 53 (Baixo)</span></div>
             <div class="item-clima">📉 Pressão Atmosférica<span>1015 hPa</span></div>
             <div class="item-clima">🌡️ Temp. da Água<span>27.5 °C</span></div>
             <div class="item-clima">💨 Vento Médio<span>12 km/h</span></div>
@@ -338,6 +368,7 @@ button:hover {
             <h4 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 13px;">🗺️ Localizador de Satélite Náutico:</h4>
             <button type="button" class="btn-gps" onclick="capturarGpsReal()">📍 Forçar Sensor GPS</button>
             <div id="map"></div>
+            <div class="lista-pontos" id="listaPontosContainer"></div>
         </div>
     </div>
 </div>
@@ -348,6 +379,7 @@ document.getElementById("btnCidade").addEventListener("click", processarAnaliseC
 let meuGrafico = null;
 let mapaPesca = null;
 let marcadorGps = null;
+let marcadoresSalvos = []; // Variável de armazenamento limpa e corrigida
 let mapaLat = -8.1120;
 let mapaLon = -34.8910;
 
@@ -460,24 +492,113 @@ function atualizarTextoEstrategia(tipo, horario, especie) {
             ? "🎯 **Ataque Ativo!** O Xaréu entra com força nas estruturas costeiras rasas perseguindo cardumes durante a subida do nível. Use poppers e jigs de alta velocidade."
             : "Na maré secando, busque as calhas mais profundas e canais centrais usando jumping jigs.";
     } else {
-        texto += "A Caranha ativa o faro predador em fendas de pedras profundas. Iscas naturais de fundo ou jigs pesados bem lentos dão o melhor resultado nessa variação.";
+        texto += "A Caranha ativa o faro predador em fendas de pedras profundas. Iscas naturais de fundo ou jigs pesados bem lentos dão o melhor resultad.";
     }
     document.getElementById("textoAnalise").innerHTML = texto;
 }
 
+// --- FUNÇÕES DE MAPA CORRIGIDAS E SALVAMENTO DE PONTOS ---
 function inicializarMapaSatelite() {
     if (!mapaPesca) {
         mapaPesca = L.map('map').setView([mapaLat, mapaLon], 13);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Esri &mdash; Telemetria Náutica'
         }).addTo(mapaPesca);
+
+        // Ouvinte de clique no mapa para criar pontos
+        mapaPesca.on('click', function(e) {
+            const nomePonto = prompt("Nome deste Ponto Secreto (Ex: Parchel do Xaréu):");
+            if (nomePonto) {
+                adicionarPontoDePesca(nomePonto, e.latlng.lat, e.latlng.lng);
+            }
+        });
+
+        // Carrega pontos antigos salvos no navegador (LocalStorage)
+        carregarPontosLocalStorage();
     } else {
         mapaPesca.setView([mapaLat, mapaLon], 13);
     }
     setTimeout(() => { mapaPesca.invalidateSize(); }, 250);
 }
 
+function adicionarPontoDePesca(nome, lat, lng) {
+    const novoPonto = { id: Date.now(), nome: nome, lat: lat, lng: lng };
+    marcadoresSalvos.push(novoPonto);
+    
+    // Cria o marcador visual vermelho na tela
+    renderizarMarcadorNoMapa(novoPonto);
+    
+    // Salva a lista atualizada no banco de dados do navegador (LocalStorage)
+    salvarPontosLocalStorage();
+    renderizarListaTextualPontos();
+}
+
+function renderizarMarcadorNoMapa(ponto) {
+    // Adiciona o pino no mapa de satélite
+    const marker = L.marker([ponto.lat, ponto.lng]).addTo(mapaPesca);
+    marker.bindPopup(`<b>⚓ ${ponto.nome}</b>`).openPopup();
+    ponto._leafletMarker = marker; // guarda referência para deleção
+}
+
+function renderizarListaTextualPontos() {
+    // Cria a lista de coordenadas embaixo do mapa
+    const container = document.getElementById("listaPontosContainer");
+    if (marcadoresSalvos.length === 0) {
+        container.innerHTML = `<div style="color: #64748b; font-size: 11px; text-align: center;">Nenhum ponto marcado no satélite ainda. Clicque no mapa para marcar.</div>`;
+        return;
+    }
+
+    container.innerHTML = "";
+    marcadoresSalvos.forEach((p) => {
+        const item = document.createElement("div");
+        item.className = "ponto-item";
+        item.innerHTML = `
+            <div><b>⚓ ${p.nome}</b> <span>(${p.lat.toFixed(4)}, ${p.lng.toFixed(4)})</span></div>
+            <button onclick="deletarPontoDePesca(${p.id})">Apagar</button>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function deletarPontoDePesca(id) {
+    // Lógica para apagar o ponto
+    const index = marcadoresSalvos.findIndex(p => p.id === id);
+    if (index !== -1) {
+        // Remove fisicamente o pino do mapa de satélite
+        if (marcadoresSalvos[index]._leafletMarker) {
+            mapaPesca.removeLayer(marcadoresSalvos[index]._leafletMarker);
+        }
+        marcadoresSalvos.splice(index, 1);
+        salvarPontosLocalStorage(); // Salva a lista limpa
+        renderizarListaTextualPontos();
+    }
+}
+
+// CORREÇÃO ESSENCIAL: Sintaxe de salvamento limpa e sem erros
+function salvarPontosLocalStorage() {
+    // Clona o array limpando as instâncias circulares do Leaflet para não quebrar o JSON
+    const dadosLimpos = marcadoresSalvos.map(p => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng }));
+    localStorage.setItem('modello_pontos_pesca', JSON.stringify(dadosLimpos));
+}
+
+function carregarPontosLocalStorage() {
+    // Lê a lista salva no navegador
+    const locais = localStorage.getItem('modello_pontos_pesca');
+    if (locais) {
+        const itens = JSON.parse(locais);
+        marcadoresSalvos = []; // Limpa o array atual antes de recarregar
+        itens.forEach(p => {
+            const pontoRestaurado = { id: p.id, nome: p.nome, lat: p.lat, lng: p.lng };
+            marcadoresSalvos.push(pontoRestaurado);
+            // Redesenha os pinos no mapa
+            renderizarMarcadorNoMapa(pontoRestaurado);
+        });
+        renderizarListaTextualPontos();
+    }
+}
+
 function capturarGpsReal() {
+    // Função de GPS inalterada e operacional
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition((position) => {
             const lat = position.coords.latitude;
@@ -489,7 +610,7 @@ function capturarGpsReal() {
             
             mapaPesca.setView([lat, lng], 15);
         }, () => {
-            alert("Não foi possível acessar o hardware do GPS. Certifique-se de que o site está rodando com o link HTTPS gerado pelo GitHub Pages no celular.");
+            alert("Não foi possível acessar o GPS. Certifique-se de que o site está rodando com o link HTTPS gerado pelo GitHub Pages no celular.");
         }, { enableHighAccuracy: true });
     } else {
         alert("Geolocalização indisponível.");
