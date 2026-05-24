@@ -335,7 +335,7 @@ button:hover {
 <body>
 
 <div class="card">
-    <h2>🎣 Análise de Janelas Costeiras</h2>
+    <h2>Análise de Janelas Costeiras</h2>
     <p class="subtitulo">Mapeamento barométrico, satélite e marés táticas.</p>
     
     <div id="badgeRede" class="status-rede">🟢 SISTEMA ONLINE</div>
@@ -412,6 +412,15 @@ button:hover {
 </div>
 
 <script>
+// ATIVAÇÃO DO MOTOR PWA / SERVICE WORKER
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Aplicativo registrado com sucesso!', reg.scope))
+        .catch(err => console.warn('Erro ao registrar aplicativo:', err));
+    });
+}
+
 document.getElementById("btnCidade").addEventListener("click", processarAnaliseCompleta);
 
 let meuGrafico = null;
@@ -444,8 +453,6 @@ function processarAnaliseCompleta() {
     plotarGraficoReal();
     montarCardsJanelas();
     inicializarMapaSatelite();
-    
-    // REGRA 2: DISPARA A SOLICITAÇÃO DO GPS JÁ NA ENTRADA AUTOMATICAMENTE
     capturarGpsReal(false);
 }
 
@@ -479,7 +486,6 @@ function calibrarCicloLunar2026() {
     });
 }
 
-// REGRA 1: MOTOR DE INJEÇÃO DO TRAÇO VERTICAL DO TIME ATUAL NO CHART.JS
 function plotarGraficoReal() {
     const ctx = document.getElementById('mareChart').getContext('2d');
     if (meuGrafico) meuGrafico.destroy();
@@ -487,7 +493,6 @@ function plotarGraficoReal() {
     const agora = new Date();
     const horaTexto = String(agora.getHours()).padStart(2, '0') + ":" + String(agora.getMinutes()).padStart(2, '0');
 
-    // Plugin customizado para desenhar a linha do tempo no Canvas
     const pluginLinhaTempo = {
         id: 'linhaTempoVertical',
         afterDraw: (chart) => {
@@ -497,7 +502,6 @@ function plotarGraficoReal() {
             const horas = agoraInterno.getHours();
             const minutos = agoraInterno.getMinutes();
             
-            // Encontra a posição X proporcional no gráfico de 24h
             const xAxe = chart.scales.x;
             const yAxe = chart.scales.y;
             
@@ -506,18 +510,16 @@ function plotarGraficoReal() {
             
             const xPixel = xAxe.left + ((xAxe.right - xAxe.left) * (minutosAtuais / totalMinutosDia));
             
-            // Desenha a linha vertical vermelha de navegação
             const ctxCanvas = chart.ctx;
             ctxCanvas.save();
             ctxCanvas.beginPath();
             ctxCanvas.lineWidth = 2;
-            ctxCanvas.strokeStyle = '#ef4444'; // Vermelho Tático
-            ctxCanvas.setLineDash([4, 4]); // Tracejado
+            ctxCanvas.strokeStyle = '#ef4444'; 
+            ctxCanvas.setLineDash([4, 4]); 
             ctxCanvas.moveTo(xPixel, yAxe.top);
             ctxCanvas.lineTo(xPixel, yAxe.bottom);
             ctxCanvas.stroke();
             
-            // Injeta o texto da hora atual flutuando no topo do traço
             ctxCanvas.fillStyle = '#ef4444';
             ctxCanvas.font = 'bold 11px Segoe UI';
             ctxCanvas.textAlign = 'center';
@@ -551,7 +553,7 @@ function plotarGraficoReal() {
             },
             plugins: { legend: { display: false } }
         },
-        plugins: [pluginLinhaTempo] // Ativa a linha vertical
+        plugins: [pluginLinhaTempo]
     });
 }
 
@@ -585,7 +587,7 @@ function montarCardsJanelas() {
     janelas.forEach((j, index) => {
         let peixes = "🐟🐟";
         if ((especie === "robalo" && j.tipo === "VAZANTE") || (especie === "xareu" && j.tipo === "ENCHENTE")) {
-            peixes = "🐟##";
+            peixes = "🐟🐟🐟";
         }
 
         const card = document.createElement("div");
@@ -713,7 +715,6 @@ function carregarPontosLocalStorage() {
     }
 }
 
-// REGRA 2: INTEGRADA COM DISPARO AUTOMÁTICO SILENCIOSO OU FORÇADO POR BOTÃO
 function capturarGpsReal(disparadoPorBotao) {
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition((position) => {
@@ -727,14 +728,12 @@ function capturarGpsReal(disparadoPorBotao) {
                 marcadorGps = L.marker([lat, lng], { icon: icone }).addTo(mapaPesca); 
             }
             
-            // Centraliza o satélite na sua posição atual
             mapaPesca.setView([lat, lng], 15);
             
             if (disparadoPorBotao) {
                 alert("GPS Costeiro Sincronizado com Sucesso!");
             }
         }, () => {
-            // Se o disparo automático inicial falhar ou for bloqueado pelo usuário, avisa apenas se ele clicar no botão manualmente
             if (disparadoPorBotao) {
                 alert("Não foi possível acessar o GPS. Certifique-se de dar permissão nas configurações do seu navegador.");
             }
