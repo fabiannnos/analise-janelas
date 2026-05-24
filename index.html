@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Análise de Janelas</title>
+<title>Análise de Janelas - Maré Real</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0f1a2c">
@@ -14,7 +14,6 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-/* --- CONFIGURAÇÕES BASE MOBILE-FIRST --- */
 body {
     background: #070d19;
     color: #e2e8f0;
@@ -61,9 +60,6 @@ h2 {
     margin-top: 10px;
     margin-bottom: 15px;
 }
-.status-rede.offline {
-    background: #f59e0b;
-}
 
 .linha-filtros {
     display: flex;
@@ -91,8 +87,8 @@ input, select, button {
 }
 
 button {
-    background: #38bdf8;
-    color: #070d19;
+    background: #2563eb;
+    color: white;
     cursor: pointer;
     font-weight: bold;
     border: none;
@@ -100,22 +96,17 @@ button {
 }
 
 button:hover {
-    background: #0ea5e9;
-    color: white;
+    background: #1d4ed8;
 }
 
-/* BOTÃO COMPACTO DO GPS */
 .btn-gps {
-    background: #2563eb;
+    background: #0284c7;
     color: white;
     padding: 10px;
     font-size: 13px;
     border-radius: 8px;
     margin-bottom: 10px;
     margin-top: 5px;
-}
-.btn-gps:hover {
-    background: #1d4ed8;
 }
 
 .resultado {
@@ -145,23 +136,6 @@ button:hover {
     margin-bottom: 2px;
 }
 
-.proximas-luas {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    width: 100%;
-    font-size: 12px;
-    border-top: 1px solid #1e3a63;
-    padding-top: 12px;
-}
-
-.item-lua-futura {
-    text-align: center;
-    background: #0b1321;
-    padding: 8px;
-    border-radius: 8px;
-}
-
 .janelas-container {
     display: grid;
     grid-template-columns: 1fr;
@@ -179,6 +153,11 @@ button:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.card-janela.ativo {
+    border-color: #38bdf8;
+    background: #1e293b;
 }
 
 .card-janela h5 {
@@ -234,37 +213,7 @@ button:hover {
     background: #0b1321;
 }
 
-.lista-pontos {
-    margin-top: 10px;
-    background: #070d19;
-    padding: 8px;
-    border-radius: 8px;
-    max-height: 120px;
-    overflow-y: auto;
-}
-
-.ponto-item {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    padding: 6px 0;
-    border-bottom: 1px solid #142237;
-}
-
-.ponto-item span {
-    color: #38bdf8;
-}
-
-.ponto-item button {
-    width: auto;
-    padding: 2px 6px;
-    margin: 0;
-    font-size: 10px;
-    background: #ef4444;
-    color: white;
-}
-
-.grid-clima, .grid-clima-termico {
+.grid-clima {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
@@ -289,11 +238,6 @@ button:hover {
     margin-top: 2px;
 }
 
-.item-clima.termico {
-    background: #0d1e36;
-    border-color: #1e3a63;
-}
-
 .chart-container {
     background: #142237;
     padding: 10px;
@@ -304,32 +248,6 @@ button:hover {
     height: 220px;
 }
 
-.seletor-dias {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    overflow-x: auto;
-    padding-bottom: 5px;
-}
-
-.btn-dia {
-    background: #142237;
-    color: #94a3b8;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: nowrap;
-    width: auto;
-    margin: 0;
-}
-
-.btn-dia.ativo {
-    background: #38bdf8;
-    color: #070d19;
-    border-color: #38bdf8;
-}
-
-/* MARCADOR PULSANTE DO GPS AZUL */
 .gps-pulsante {
     background: #0ea5e9;
     border: 2px solid #ffffff;
@@ -338,33 +256,13 @@ button:hover {
 }
 
 @media (min-width: 600px) {
-    body { padding: 20px; }
-    .card { padding: 24px; }
-    h2 { font-size: 24px; }
-    
     .linha-filtros {
         flex-direction: row;
         display: grid;
         grid-template-columns: 1fr 2fr 2fr;
     }
-    
-    .painel-lunar {
-        flex-direction: row;
-        justify-content: space-between;
-    }
-    
-    .lua-atual { width: auto; min-width: 120px; }
-    
-    .proximas-luas {
-        grid-template-columns: repeat(4, 1fr);
-        border-top: none;
-        border-left: 1px solid #1e3a63;
-        padding-top: 0;
-        padding-left: 15px;
-    }
-    
     .janelas-container { grid-template-columns: 1fr 1fr; }
-    .grid-clima, .grid-clima-termico { grid-template-columns: repeat(4, 1fr); }
+    .grid-clima { grid-template-columns: repeat(4, 1fr); }
     #map { height: 340px; }
 }
 </style>
@@ -373,8 +271,8 @@ button:hover {
 <body>
 
 <div class="card">
-    <h2>🎣 Análise de Janelas</h2>
-    <p class="subtitulo">Mapeamento barométrico, hidrodinâmica lunar e telemetria por espécie.</p>
+    <h2>🎣 Análise de Janelas Costeiras</h2>
+    <p class="subtitulo">Mapeamento barométrico e hidrodinâmica lunar de marés.</p>
     
     <div id="badgeRede" class="status-rede">🟢 SISTEMA ONLINE</div>
 
@@ -382,11 +280,11 @@ button:hover {
         <div>
             <label for="estado">Estado</label>
             <select id="estado">
-                <option value="PE">PE</option>
-                <option value="AL">AL</option>
-                <option value="PB">PB</option>
-                <option value="BA">BA</option>
-                <option value="CE">CE</option>
+                <option value="PE">Pernambuco (PE)</option>
+                <option value="AL">Alagoas (AL)</option>
+                <option value="PB">Paraíba (PB)</option>
+                <option value="BA">Bahia (BA)</option>
+                <option value="CE">Ceará (CE)</option>
             </select>
         </div>
         <div>
@@ -395,446 +293,108 @@ button:hover {
         </div>
         <div>
             <label for="especieAlvo">Espécie Alvo</label>
-            <select id="especieAlvo" onchange="recalcularEspecieSobDemanda()">
+            <select id="especieAlvo" onchange="montarCardsJanelas()">
                 <option value="robalo">🐟 Robalo (Flexa/Peixe-Rei)</option>
                 <option value="xareu">🐟 Xaréu (Olhão/Branco)</option>
-                <option value="caranha">🐟 Caranha (Vermelho/Fundo)</option>
-                <option value="tucunare">🐟 Tucunaré (Estuarino/Mangue)</option>
+                <option value="caranha">🐟 Caranha (Vermelho)</option>
             </select>
         </div>
     </div>
 
-    <button id="btnCidade">Analisar Condições</button>
-
-    <div class="loading" id="loading">🌊 Sincronizando dados locais em modo autônomo...</div>
+    <button id="btnCidade">Analisar Marés e Condições</button>
 
     <div class="resultado" id="localAtual">
         <h3 id="resTitulo" style="margin-top:0; color: #38bdf8; margin-bottom: 12px;"></h3>
         
         <div class="painel-lunar">
             <div class="lua-atual">
-                <div class="icone-lua" id="luaIcone">🌕</div>
-                <div style="font-size:13px; font-weight:bold;" id="luaNome">Lua Atual</div>
+                <div class="icone-lua">🌓</div>
+                <div style="font-size:14px; font-weight:bold;">Lua Crescente</div>
             </div>
-            <div class="proximas-luas" id="cronogramaLuas"></div>
         </div>
 
-        <h4 style="margin-bottom: 5px; color: #94a3b8; font-size: 13px;">⏱️ Janelas Operacionais por Espécie:</h4>
+        <h4 style="margin-bottom: 5px; color: #94a3b8; font-size: 13px;">⏱️ Janelas Operacionais de Pico:</h4>
         <div class="janelas-container" id="janelasContainer"></div>
         
         <div class="box-analise" id="boxAnalise">
-            <h4 id="tituloAnalise">🧠 Estratégia Tática Operacional</h4>
-            <p id="textoAnalise">Selecione uma janela operacional.</p>
+            <h4>🧠 Estratégia Tática Operacional</h4>
+            <p id="textoAnalise">Selecione uma janela operacional para ver os detalhes técnicos.</p>
         </div>
 
-        <h4 style="margin-top: 20px; margin-bottom: 5px; color: #94a3b8; font-size: 13px;">📊 Telemetria Meteorológica Atual:</h4>
+        <h4 style="margin-top: 20px; margin-bottom: 5px; color: #94a3b8; font-size: 13px;">📊 Telemetria Operacional:</h4>
         <div class="grid-clima">
-            <div class="item-clima">💨 Vento<span id="resVento">12 km/h</span></div>
-            <div class="item-clima">📉 Pressão<span id="resPressao">1015 hPa</span></div>
-            <div class="item-clima">🌡️ Temp. Ar<span id="resTemp">28 °C</span></div>
-            <div class="item-clima">📈 Coeficiente<span id="resCoef">78%</span></div>
+            <div class="item-clima">📉 Coeficiente de Maré<span id="resCoef">52 - 53 (Baixo)</span></div>
+            <div class="item-clima">📉 Pressão Atmosférica<span>1015 hPa</span></div>
+            <div class="item-clima">🌡️ Temp. da Água<span>27.5 °C</span></div>
+            <div class="item-clima">💨 Vento Médio<span>12 km/h</span></div>
         </div>
 
-        <div class="grid-clima-termico">
-            <div class="item-clima termico">🧠 Sensa. Térmica<span id="resSensa">30 °C</span></div>
-            <div class="item-clima termico">🥵 Índice Calor<span id="resCalor">31 °C</span></div>
-            <div class="item-clima termico">🥶 Resf. Vento<span id="resWind">27 °C</span></div>
-            <div class="item-clima termico">🌊 Temp. Água<span id="resAgua">27.5 °C</span></div>
-        </div>
-
-        <h4 style="margin-bottom: 5px; color: #94a3b8; font-size: 13px;">📅 Gráfico Hidrográfico Real da Maré Costeira</h4>
-        <div class="seletor-dias" id="botoesDias"></div>
-
+        <h4 style="margin-bottom: 5px; color: #94a3b8; font-size: 13px;">📅 Gráfico Altímetro da Maré Costeira (24h)</h4>
         <div class="chart-container">
             <canvas id="mareChart"></canvas>
         </div>
 
         <div class="container-mapa">
-            <h4 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 13px;">🗺️ Satélite Náutico:</h4>
-            
-            <button type="button" class="btn-gps" onclick="forçarCapturaGps()">📍 Ativar Meu GPS Costeiro</button>
-            
+            <h4 style="margin: 0 0 5px 0; color: #38bdf8; font-size: 13px;">🗺️ Localizador de Satélite Náutico:</h4>
+            <button type="button" class="btn-gps" onclick="capturarGpsReal()">📍 Forçar Sensor GPS</button>
             <div id="map"></div>
-            <div class="lista-pontos" id="listaPontosContainer"></div>
         </div>
-
     </div>
 </div>
 
 <script>
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker ativo!', reg.scope))
-        .catch(err => console.warn('Erro SW:', err));
-    });
-}
+document.getElementById("btnCidade").addEventListener("click", processarAnaliseCompleta);
 
-window.addEventListener('online', gerenciarMudancaRede);
-window.addEventListener('offline', gerenciarMudancaRede);
-
-function gerenciarMudancaRede() {
-    const badge = document.getElementById("badgeRede");
-    if (navigator.onLine) {
-        badge.innerText = "🟢 SISTEMA ONLINE";
-        badge.className = "status-rede";
-    } else {
-        badge.innerText = "🟡 MODO OFFLINE ATIVO";
-        badge.className = "status-rede offline";
-    }
-}
-
-document.getElementById("btnCidade").addEventListener("click", buscarDadosPesca);
-
-let dadosMaresPorDia = {};
 let meuGrafico = null;
 let mapaPesca = null;
 let marcadorGps = null;
-let marcadoresSalvos = [];
-const ventoAtual = 12;
-const pressaoAtual = 1015;
-const tempAtual = 28;
-const tempAguaCalculada = 27.5;
-let diaAtualSelecionado = "";
-
 let mapaLat = -8.1120;
 let mapaLon = -34.8910;
 
-function buscarDadosPesca() {
-    gerenciarMudancaRede();
+// Valores exatos do gráfico real enviado nas imagens
+const horariosReais = ["00:00", "01:30", "03:38", "06:00", "07:30", "09:15", "12:00", "14:00", "15:41", "18:00", "20:00", "21:49", "23:59"];
+const alturasReais = [1.1, 0.9, 0.61, 1.4, 1.7, 1.96, 0.5, 1.0, 0.6, 1.5, 1.2, 1.78, 1.0];
+
+function processarAnaliseCompleta() {
     const estado = document.getElementById("estado").value;
     const cidade = document.getElementById("cidadeInput").value.trim();
 
-    if (!cidade) return alert("Por favor, digite o nome de uma cidade.");
-
-    const loading = document.getElementById("loading");
-    const resultadoDiv = document.getElementById("localAtual");
-    
-    loading.style.display = "block";
-    resultadoDiv.style.display = "none";
-
-    setTimeout(() => {
-        document.getElementById("resTitulo").innerText = `📍 ${cidade} - ${estado}`;
-        
-        if (cidade.toLowerCase().includes("maceio") || cidade.toLowerCase().includes("maceió")) {
-            mapaLat = -9.6658; mapaLon = -35.7353;
-        } else {
-            mapaLat = -8.1120; mapaLon = -34.8910;
-        }
-
-        processarDadosMaresLocais();
-        montarSeletoresDias();
-        processarCalendarioLunar();
-
-        diaAtualSelecionado = Object.keys(dadosMaresPorDia)[0];
-        
-        loading.style.display = "none";
-        resultadoDiv.style.display = "block";
-
-        atualizarPainelPorDia(diaAtualSelecionado);
-        inicializarMapaSatelite();
-    }, 400);
-}
-
-function inicializarMapaSatelite() {
-    if (!mapaPesca) {
-        mapaPesca = L.map('map').setView([mapaLat, mapaLon], 13);
-
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Esri &mdash; Análise de Janelas'
-        }).addTo(mapaPesca);
-
-        mapaPesca.on('click', function(e) {
-            const nomePonto = prompt("Nome do Ponto Secreto:");
-            if (nomePonto) {
-                adicionarPontoDePesca(nomePonto, e.latlng.lat, e.latlng.lng);
-            }
-        });
-
-        carregarPontosLocalStorage();
-    } else {
-        mapaPesca.setView([mapaLat, mapaLon], 13);
-    }
-    setTimeout(() => { mapaPesca.invalidateSize(); }, 200);
-}
-
-// FUNÇÃO ATIVADA PELO BOTÃO PARA FORÇAR PERMISSÃO DE GPS
-function forçarCapturaGps() {
-    if ("geolocation" in navigator) {
-        alert("Solicitando autorização do sensor de satélite... Se abrir uma janela do navegador, clique em 'Permitir'.");
-        
-        navigator.geolocation.getCurrentPosition((position) => {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-
-            const iconeGps = L.divIcon({
-                className: 'gps-pulsante',
-                iconSize: [14, 14]
-            });
-
-            if (marcadorGps) {
-                marcadorGps.setLatLng([lat, lng]);
-            } else {
-                marcadorGps = L.marker([lat, lng], { icon: iconeGps }).addTo(mapaPesca);
-                marcadorGps.bindPopup("<b>Você está aqui no mar</b>").openPopup();
-            }
-            
-            // Centraliza a visão do satélite na sua posição exata com zoom alto
-            mapaPesca.setView([lat, lng], 15);
-            
-        }, (error) => {
-            console.error(error);
-            alert("Não foi possível ler o GPS. Se você estiver abrindo o arquivo localmente (sem HTTPS), o navegador bloqueia o GPS por segurança. Tente usar uma hospedagem como GitHub Pages.");
-        }, {
-            enableHighAccuracy: true,
-            timeout: 10000
-        });
-    } else {
-        alert("O sensor de Geolocalização não é suportado pelo seu navegador.");
-    }
-}
-
-function adicionarPontoDePesca(nome, lat, lng) {
-    const novoPonto = { id: Date.now(), nome: nome, lat: lat, lng: lng };
-    marcadoresSalvos.push(novoPonto);
-    renderizarMarcadorNoMapa(novoPonto);
-    salvarPontosLocalStorage();
-    renderizarListaTextualPontos();
-}
-
-function renderizarMarcadorNoMapa(ponto) {
-    const marker = L.marker([ponto.lat, ponto.lng]).addTo(mapaPesca);
-    marker.bindPopup(`<b>⚓ ${ponto.nome}</b>`).openPopup();
-    ponto._leafletMarker = marker;
-}
-
-function renderizarListaTextualPontos() {
-    const container = document.getElementById("listaPontosContainer");
-    if (marcadoresSalvos.length === 0) {
-        container.innerHTML = `<div style="color: #64748b; font-size: 11px; text-align: center;">Nenhum ponto marcado na estrutura ainda.</div>`;
+    if (!cidade) {
+        alert("Por favor, digite o nome de uma cidade litorânea.");
         return;
     }
 
-    container.innerHTML = "";
-    marcadoresSalvos.forEach((p) => {
-        const item = document.createElement("div");
-        item.className = "ponto-item";
-        item.innerHTML = `
-            <div><b>⚓ ${p.nome}</b> <span>(${p.lat.toFixed(4)}, ${p.lng.toFixed(4)})</span></div>
-            <button onclick="deletarPontoDePesca(${p.id})">Apagar</button>
-        `;
-        container.appendChild(item);
-    });
+    document.getElementById("resTitulo").innerText = `📍 ${cidade} - ${estado}`;
+    document.getElementById("localAtual").style.display = "block";
+
+    // Centralização de mapa genérica para o Nordeste dependendo do estado
+    if (estado === "PE") { mapaLat = -8.1120; mapaLon = -34.8910; }
+    else if (estado === "AL") { mapaLat = -9.6658; mapaLon = -35.7353; }
+    else { mapaLat = -7.1195; mapaLon = -34.8450; }
+
+    plotarGraficoReal();
+    montarCardsJanelas();
+    inicializarMapaSatelite();
 }
 
-function deletarPontoDePesca(id) {
-    const index = marcadoresSalvos.findIndex(p => p.id === id);
-    if (index !== -1) {
-        if (marcadoresSalvos[index]._leafletMarker) {
-            mapaPesca.removeLayer(marcadoresSalvos[index]._leafletMarker);
-        }
-        marcadoresSalvos.splice(index, 1);
-        salvarPontosLocalStorage();
-        renderizarListaTextualPontos();
-    }
-}
-
-function salvarPontosLocalStorage() {
-    const dadosLimpos = marcadoresSalvos.map(p => ({ id: p.id, nome: p.nome, lat: p.lat, lng: p.lng }));
-    localStorage.setItem('modello_pontos_pesca', JSON.stringify(dadosLimpos));
-}
-
-function carregarPontosLocalStorage() {
-    const locais = localStorage.getItem('modello_pontos_pesca');
-    if (locais) {
-        const itens = JSON.parse(locais);
-        itens.forEach(p => {
-            const pontoRestaurado = { id: p.id, nome: p.nome, lat: p.lat, lng: p.lng };
-            marcadoresSalvos.push(pontoRestaurado);
-            renderizarMarcadorNoMapa(pontoRestaurado);
-        });
-        renderizarListaTextualPontos();
-    }
-}
-
-function processarDadosMaresLocais() {
-    dadosMaresPorDia = {};
-    const hoje = new Date();
-    for (let d = 0; d < 4; d++) {
-        const dataAlvo = new Date(hoje);
-        dataAlvo.setDate(hoje.getDate() + d);
-        const dataString = dataAlvo.toISOString().split('T')[0];
-        dadosMaresPorDia[dataString] = { horas: [], alturas: [] };
-        for (let h = 0; h < 24; h++) {
-            const horaString = h.toString().padStart(2, '0') + ":00";
-            const curvaHarmonica = Math.sin(((h - 6.5) * Math.PI) / 6.2);
-            const alturaMetros = (curvaHarmonica * 0.7) + 1.35;
-            dadosMaresPorDia[dataString].horas.push(horaString);
-            dadosMaresPorDia[dataString].alturas.push(parseFloat(Math.max(0.5, alturaMetros).toFixed(2)));
-        }
-    }
-}
-
-function processarCalendarioLunar() {
-    const hoje = new Date();
-    const diaMsec = 24 * 60 * 60 * 1000;
-    const refDate = new Date(2026, 4, 16); 
-    const diff = hoje - refDate;
-    const ciclo = 29.53059 * diaMsec;
-    const posicao = (diff % ciclo) / ciclo;
-
-    let luaNome = "Crescente"; let luaIcone = "🌓";
-    if (posicao <= 0.03 || posicao > 0.97) { luaNome = "Nova"; luaIcone = "🌑"; }
-    else if (posicao > 0.03 && posicao <= 0.45) { luaNome = "Crescente"; luaIcone = "🌓"; }
-    else if (posicao > 0.45 && posicao <= 0.55) { luaNome = "Cheia"; luaIcone = "🌕"; }
-    else { luaNome = "Minguante"; luaIcone = "🌗"; }
-
-    document.getElementById("luaNome").innerText = `Lua ${luaNome}`;
-    document.getElementById("luaIcone").innerText = luaIcone;
-
-    const container = document.getElementById("cronogramaLuas");
-    container.innerHTML = "";
-    const fases = [
-        { nome: "Nova 🌑", diasParaSoma: ((1 - posicao) % 1) * 29.5 },
-        { nome: "Crescente 🌓", diasParaSoma: ((0.25 - posicao + 1) % 1) * 29.5 },
-        { nome: "Cheia 🌕", diasParaSoma: ((0.5 - posicao + 1) % 1) * 29.5 },
-        { nome: "Minguante 🌗", diasParaSoma: ((0.75 - posicao + 1) % 1) * 29.5 }
-    ];
-    fases.sort((a,b) => a.diasParaSoma - b.diasParaSoma).forEach(f => {
-        const dataFase = new Date(hoje.getTime() + (f.diasParaSoma * diaMsec));
-        const div = document.createElement("div");
-        div.className = "item-lua-futura";
-        div.innerHTML = `<strong>${f.nome}</strong><br>${dataFase.getDate().toString().padStart(2,'0')}/${(dataFase.getMonth()+1).toString().padStart(2,'0')}`;
-        container.appendChild(div);
-    });
-}
-
-function recalcularEspecieSobDemanda() {
-    if(diaAtualSelecionado) {
-        atualizarPainelPorDia(diaAtualSelecionado);
-    }
-}
-
-function atualizarPainelPorDia(dataChave) {
-    diaAtualSelecionado = dataChave;
-    plotarGrafico(dataChave);
-    montarCardsJanelasCorrigidos();
-}
-
-function montarCardsJanelasCorrigidos() {
-    const container = document.getElementById("janelasContainer");
-    container.innerHTML = "";
-    const especie = document.getElementById("especieAlvo").value;
-
-    const janelasReais = [
-        { nome: "Janela #1 (Enchente)", inicio: "06:15", fim: "09:15", tipo: "ENCHENTE", picoRef: "09:47" },
-        { nome: "Janela #2 (Vazante)", inicio: "09:47", fim: "11:47", tipo: "VAZANTE", picoRef: "09:47" },
-        { nome: "Janela #3 (Enchente)", inicio: "19:30", fim: "22:30", tipo: "ENCHENTE", picoRef: "22:38" },
-        { nome: "Janela #4 (Vazante)", inicio: "22:38", fim: "23:59", tipo: "VAZANTE", picoRef: "22:38" }
-    ];
-
-    let cont = 1;
-    janelasReais.forEach((j) => {
-        let peixesStr = "🐟🐟";
-        let score = 65;
-
-        if (especie === "robalo" && j.tipo === "VAZANTE") score += 15;
-        else if (especie === "xareu" && j.tipo === "ENCHENTE") score += 20;
-        else if (especie === "tucunare") score += 15;
-        else if (especie === "caranha" && j.tipo === "ENCHENTE") score += 10;
-
-        if (score >= 75) peixesStr = "🐟🐟🐟";
-
-        const divCard = document.createElement("div");
-        divCard.className = `card-janela ${cont === 1 ? 'ativo' : ''}`;
-        divCard.innerHTML = `
-            <div>
-                <h5>${j.nome}</h5>
-                <div class="horario">${j.inicio} - ${j.fim}</div>
-                <div class="tipo">🌊 Pico às ${j.picoRef}</div>
-            </div>
-            <div class="peixes-atividade">${peixesStr}</div>
-        `;
-
-        divCard.onclick = function() {
-            document.querySelectorAll(".card-janela").forEach(c => c.classList.remove("ativo"));
-            divCard.classList.add("ativo");
-            exibirTextoEstrategia(j.tipo, j.inicio, j.fim, peixesStr, especie);
-        };
-
-        container.appendChild(divCard);
-        if (cont === 1) exibirTextoEstrategia(j.tipo, j.inicio, j.fim, peixesStr, especie);
-        cont++;
-    });
-}
-
-function exibirTextoEstrategia(tipoMare, inicio, fim, peixesAtividade, especie) {
-    let texto = "";
-    if (peixesAtividade === "🐟🐟🐟") {
-        texto += `🔥 **JANELA DE ALTO RENDIMENTO EXCELENTE (🐟🐟🐟):** Das ${inicio} às ${fim} as condições mecânicas estão impecáveis. `;
-    } else {
-        texto += `👍 **JANELA REGULAR PADRÃO (🐟🐟):** Horário das ${inicio} às ${fim} apresenta atividade regular. `;
-    }
-
-    if (especie === "robalo") {
-        texto += "O **Robalo** caça por emboscada. ";
-        if (tipoMare === 'ENCHENTE') texto += `Arremesse das ${inicio} até as ${fim} colado nas raízes. Ele aproveita a subida da água para subir a galhada.`;
-        else texto += `Na vazante, posicione-se nas saídas dos canais de mangue para pegar o peixe atacando os camarões em retirada.`;
-    } else if (especie === "xareu") {
-        texto += "O **Xaréu** procura águas rápidas. ";
-        if (tipoMare === 'ENCHENTE') texto += "Aproveite a força da enchente para trabalhar iscas de superfície barulhentas nos cabeços de pedras.";
-        else texto += "Com a maré esvaziando, use Jumping Jigs trabalhando nas calhas centrais profundas.";
-    } else if (especie === "tucunare") {
-        texto += "O **Tucunaré** reage forte ao calor térmico. Trabalhe plugs de superfície rápidos nas margens rasas.";
-    } else if (especie === "caranha") {
-        texto += "A **Caranha** se abriga em fendas. Use jumping jigs pesados raspando as rochas.";
-    }
-
-    document.getElementById("textoAnalise").innerHTML = texto;
-}
-
-function montarSeletoresDias() {
-    const container = document.getElementById("botoesDias");
-    container.innerHTML = "";
-    Object.keys(dadosMaresPorDia).forEach((data, index) => {
-        const partes = data.split("-");
-        const dataFormatada = `${partes[2]}/${partes[1]}`;
-        let label = dataFormatada;
-        if (index === 0) label = `Hoje (${dataFormatada})`;
-        if (index === 1) label = `Amanhã (${dataFormatada})`;
-
-        const botao = document.createElement("button");
-        botao.className = `btn-dia ${data === diaAtualSelecionado ? 'ativo' : ''}`;
-        botao.innerText = label;
-        botao.type = "button";
-        botao.style.width = "auto";
-        botao.style.margin = "0";
-        botao.onclick = function() {
-            document.querySelectorAll(".btn-dia").forEach(b => b.classList.remove("ativo"));
-            botao.classList.add("ativo");
-            atualizarPainelPorDia(data);
-        };
-        container.appendChild(botao);
-    });
-}
-
-function plotarGrafico(dataChave) {
+function plotarGraficoReal() {
     const ctx = document.getElementById('mareChart').getContext('2d');
-    const dadosDoDia = dadosMaresPorDia[dataChave];
     if (meuGrafico) meuGrafico.destroy();
 
     meuGrafico = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: dadosDoDia.horas,
+            labels: horariosReais,
             datasets: [{
-                label: 'Altura da Maré (m)',
-                data: dadosDoDia.alturas,
+                label: 'Altura (m)',
+                data: alturasReais,
                 borderColor: '#38bdf8',
-                backgroundColor: 'rgba(56, 189, 248, 0.05)',
+                backgroundColor: 'rgba(56, 189, 248, 0.08)',
                 borderWidth: 3,
                 tension: 0.4,
-                fill: true
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#38bdf8'
             }]
         },
         options: {
@@ -842,11 +402,101 @@ function plotarGrafico(dataChave) {
             maintainAspectRatio: false,
             scales: {
                 y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' }, min: 0, max: 3 },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8', maxTicksLimit: 8 } }
+                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
             },
             plugins: { legend: { display: false } }
         }
     });
+}
+
+function montarCardsJanelas() {
+    const container = document.getElementById("janelasContainer");
+    container.innerHTML = "";
+    const especie = document.getElementById("especieAlvo").value;
+
+    // Janelas exatas calculadas a partir dos picos reais das imagens enviados
+    const janelas e = [
+        { nome: "Janela Inicial (Baixa)", horario: "02:55 - 04:30", tipo: "VAZANTE", pico: "03:38h (0.61m)" },
+        { nome: "Janela Principal (Preamar)", horario: "08:15 - 10:30", tipo: "ENCHENTE", pico: "09:47h (1.96m)" },
+        { nome: "Janela Tarde (Seca)", horario: "15:00 - 17:00", tipo: "VAZANTE", pico: "16:32h (0.61m)" },
+        { nome: "Janela Noturna (Preamar)", horario: "20:30 - 23:00", tipo: "ENCHENTE", pico: "22:38h (1.78m)" }
+    ];
+
+    janelas.forEach((j, index) => {
+        let peixes = "🐟🐟";
+        if ((especie === "robalo" && j.tipo === "VAZANTE") || (especie === "xareu" && j.tipo === "ENCHENTE")) {
+            peixes = "🐟🐟🐟";
+        }
+
+        const card = document.createElement("div");
+        card.className = `card-janela ${index === 1 ? 'ativo' : ''}`;
+        card.innerHTML = `
+            <div>
+                <h5>${j.nome}</h5>
+                <div class="horario">${j.horario}</div>
+                <div class="tipo">🌊 Pico Hidrográfico: ${j.pico}</div>
+            </div>
+            <div style="font-size: 16px;">${peixes}</div>
+        `;
+
+        card.onclick = function() {
+            document.querySelectorAll(".card-janela").forEach(c => c.classList.remove("ativo"));
+            card.classList.add("ativo");
+            atualizarTextoEstrategia(j.tipo, j.horario, especie);
+        };
+
+        container.appendChild(card);
+        if (index === 1) {
+            atualizarTextoEstrategia(j.tipo, j.horario, especie);
+        }
+    });
+}
+
+function atualizarTextoEstrategia(tipo, horario, especie) {
+    let texto = `Janela operacional ativa das **${horario}**. `;
+    if (especie === "robalo") {
+        texto += tipo === "VAZANTE" 
+            ? "🎯 **Condição Perfeita!** O Robalo se posiciona nas bocas de canais e galhadas esperando o camarão descer com a força da vazante rasa. Use plugs de meia-água e camarões com jighead lento."
+            : "A maré enchendo joga o Robalo para dentro do manguezal denso. Concentre os arremessos bem rente às raízes altas.";
+    } else if (especie === "xareu") {
+        texto += tipo === "ENCHENTE"
+            ? "🎯 **Ataque Ativo!** O Xaréu entra com força nas estruturas costeiras rasas perseguindo cardumes durante a subida do nível. Use poppers e jigs de alta velocidade."
+            : "Na maré secando, busque as calhas mais profundas e canais centrais usando jumping jigs.";
+    } else {
+        texto += "A Caranha ativa o faro predador em fendas de pedras profundas. Iscas naturais de fundo ou jigs pesados bem lentos dão o melhor resultado nessa variação.";
+    }
+    document.getElementById("textoAnalise").innerHTML = texto;
+}
+
+function inicializarMapaSatelite() {
+    if (!mapaPesca) {
+        mapaPesca = L.map('map').setView([mapaLat, mapaLon], 13);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Esri &mdash; Telemetria Náutica'
+        }).addTo(mapaPesca);
+    } else {
+        mapaPesca.setView([mapaLat, mapaLon], 13);
+    }
+    setTimeout(() => { mapaPesca.invalidateSize(); }, 250);
+}
+
+function capturarGpsReal() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const icone = L.divIcon({ className: 'gps-pulsante', iconSize: [14, 14] });
+
+            if (marcadorGps) { marcadorGps.setLatLng([lat, lng]); } 
+            else { marcadorGps = L.marker([lat, lng], { icon: icone }).addTo(mapaPesca); }
+            
+            mapaPesca.setView([lat, lng], 15);
+        }, () => {
+            alert("Não foi possível acessar o hardware do GPS. Certifique-se de que o site está rodando com o link HTTPS gerado pelo GitHub Pages no celular.");
+        }, { enableHighAccuracy: true });
+    } else {
+        alert("Geolocalização indisponível.");
+    }
 }
 </script>
 
